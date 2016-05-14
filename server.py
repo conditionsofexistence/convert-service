@@ -1,6 +1,8 @@
 import os
 from flask import Flask, request, redirect, url_for
 from werkzeug import secure_filename
+from converter.convert import convert
+from converter.convert import ingest
 
 UPLOAD_FOLDER = '/tmp/'
 ALLOWED_EXTENSIONS = set(['csv'])
@@ -14,15 +16,23 @@ def allowed_file(filename):
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
+    #POST
     if request.method == 'POST':
         file = request.files['file']
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('index'))
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            print filepath
+            data, size, input_file = ingest(filepath, 'none')
+            s = convert(data, size)
+            return s
+            #return redirect(url_for('index'))
+
+    # GET
     return """
     <!doctype html>
-    <title>Upload new File</title>
+    <title>CSV to TEI4BPS converter</title>
     <h1>Upload new File</h1>
     <form action="" method=post enctype=multipart/form-data>
       <p><input type=file name=file>
@@ -32,4 +42,4 @@ def index():
     """ % "<br>".join(os.listdir(app.config['UPLOAD_FOLDER'],))
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='127.0.0.1', port=5001, debug=True)

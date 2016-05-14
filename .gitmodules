@@ -1,0 +1,3 @@
+[submodule "converter"]
+	path = converter
+	url = git@github.com:berkeleyprosopography/TEI4BPSConverter.git
