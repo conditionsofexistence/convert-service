@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, redirect, url_for, send_from_directory
+from flask import Flask, request, redirect, url_for, send_from_directory, render_template
 from werkzeug import secure_filename
 from converter.convert import convert
 from converter.convert import ingest
@@ -62,21 +62,7 @@ def show_path(path):
     ).strftime('%Y-%m-%d %H:%M:%S')
 
     if os.path.exists(filepath):
-        ret = """<!doctype html>
-                        <html><head>
-                        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on$
-                        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7u$
-                        <title>CSV to TEI4BPS converter | Task # {0}</title>
-                        </head><body>
-                        <div class="starter-template">
-                        <h1>Task # {0}</h1>
-                        <p>Processed at: {1}</p>
-                        <p><a href = "/">New conversion</a></p>
-                        <div class="well">
-                        <a href = "/download/{0}/input.csv">Input file </a><br/>
-                        <a href = "/download/{0}/output.xml">Converted file </a><br/>
-                        <a href = "/download/{0}/conversion.log">Conversion log</a>
-                        </div>""".format(path, modtime)
+        ret = render_template('task.html', task_id = path, task_time = modtime)
     else:
         ret = "Not found"
     return ret
@@ -89,58 +75,18 @@ def index():
         if file and allowed_file(file.filename):
             filename = 'input.csv' #secure_filename(file.filename)
             workspace, uid = make_workspace()
-            file.save(os.path.join(workspace, filename))
             filepath = os.path.join(workspace, filename)
+            file.save(filepath)
             ret = uid
             try:
                 data, size, input_file = ingest(filepath, 'none')
                 converted_file, log = convert(workspace, filename, request)
-                print type(log)
-                ret = """
-                    <!doctype html>
-                    <html><head>
-                    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on$
-                    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7u$
-                    <title>CSV to TEI4BPS converter | Conversion complete!</title>
-                    </head><body>
-                    <div class="starter-template">
-                    <h1>Task # {2}</h1>
-                    <p><a href = "/">New conversion</a></p>
-                    <div class="well">
-                    <a href = "/download/{2}/input.csv">Input file </a><br/>
-                    <a href = "/download/{2}/output.xml">Converted file </a><br/>
-                    <a href = "/download/{2}/conversion.log">This log</a>
-                    </div>
-                    <p style='font-family:"Andale Mono", "Monotype.com", monospace;'>{0}</p>
-                    </div></body></html>""".format("<br/>".join([line for line in log]), converted_file, uid)
+                ret = render_template('task_complete.html', log = log,  task_id = uid, )
                 return ret
             except Exception as e:
                 return "http://convert.berkeleyprosopography.org/download/{0}/raw_output.txt\nError was: {1}".format(ret, e)
-
-    return """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-    <title>CSV to TEI4BPS converter</title>
-    </head><body>
-    <div class="container">
-<div class="starter-template">
-    <h1>CSV -> TEI4BPS Web Converter</h1>
-    <a href="https://github.com/berkeleyprosopography/convert-service">how do I use this?</a>
-    <p class="lead"> Select a CSV input file from your computer and click "upload" to have it converted in TEI4BPS</p>
-    </div>
-    <form class="form-inline" action="" method=post enctype=multipart/form-data>
-         <div class="form-group">
-         <input class="form-control" class="custom-file-input" type=file name=file>
-         <input class="btn btn-primary" type=submit value=Upload>
-    </div>
-</form>
-</div>
-    </body>
-    </html>
-    """
+    
+    return render_template('home.html')
 
 if __name__ == "__main__":
     app.run(host='127.0.0.1', port=5001, debug=True)

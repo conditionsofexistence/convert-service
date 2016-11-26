@@ -1,0 +1,12 @@
+    {% extends "base.html" %}
+    {% block body %}
+<div class="starter-template">
+<h1>Task # {{ task_id }}</h1>
+<p>Processed at: {{ task_time }}</p>
+<p><a href = "/">New conversion</a></p>
+<div class="well">
+<a href = "/download/{{ task_id }}/input.csv">Input file </a><br/>
+<a href = "/download/{{ task_id }}/output.xml">Converted file </a><br/>
+<a href = "/download/{{ task_id }}/conversion.log">Conversion log</a>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="starter-template">
+<h1>Task # <a href="/show/{{task_id}}">{{ task_id }}</a></h1>
+<p><a href = "/">New conversion</a></p>
+<div class="well">
+<a href = "/download/{{ task_id }}/input.csv">Input file </a><br/>
+<a href = "/download/{{ task_id }}/output.xml">Converted file </a><br/>
+<a href = "/download/{{ task_id }}/conversion.log">This log</a>
+</div>
+<p style='font-family:"Andale Mono", "Monotype.com", monospace;'>
+
+{% for line in log %}
+    {{ line }}<br/>
+{% endfor %}
+</p>
+</div>
+{% endblock %}
