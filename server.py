@@ -67,15 +67,17 @@ def show_path(path):
     ).strftime('%Y-%m-%d %H:%M:%S')
 
     if os.path.exists(filepath):
-        ret = render_template('task.html', task_id = path, m_time = modtime, c_time=ctime)
+        tl = [x for x in os.walk(path)]
+        ret = render_template('task.html', task_id = path, m_time = modtime, c_time=ctime,)
     else:
         ret = "Not found"
     return ret
 
 @app.route('/list',  methods=['GET',])
 def list():
-    task_list = [x[1] for x in os.walk(WORKSPACE_FOLDER)][0]
-    return render_template('list.html', task_list = task_list,)
+    tl = [x for x in os.walk(WORKSPACE_FOLDER)]
+    tk = {tl[0][1][i]: len(tl[i+1][2]) for i in range(0, len(tl)-1)}
+    return render_template('list.html', task_list = tk,)
 
 @app.route("/", methods=['GET', 'POST'])
 def index():

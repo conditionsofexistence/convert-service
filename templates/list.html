@@ -2,10 +2,27 @@
 {% block body %}
 <div class="container">
      <h1>Tasks list<a href="/show/{{task_id}}">{{ task_id }}</a></h1>
-     
+     <div class="well">
+          <h3>Legend</h3>
+          <p class="bg-success">OK</p> 
+          <p class="bg-warning">Error inside converter (it's likely your file) </p> 
+          <p class="bg-danger">Runtime error (it's likely this app)</p> 
+          
+         
+     </div>
      <div class="list-group">
-       {% for line in task_list %}
-         <a class="list-group-item" href="/show/{{ line }}">{{ line }}</a>
+       {% for line, n in task_list.iteritems()  %}
+
+         <a class="list-group-item
+               {% if n == 3 %}
+                    list-group-item-success
+               {% elif n < 3 %}
+                    list-group-item-warning
+               {% elif n > 3 %}
+                    list-group-item-danger
+               {% endif %}
+         " href="/show/{{ line }}">{{ line }}
+         </a>
           {% endfor %}
      </div>
 
