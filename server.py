@@ -104,7 +104,7 @@ def index():
                     <title>CSV to TEI4BPS converter | Conversion complete!</title>
                     </head><body>
                     <div class="starter-template">
-                    <h1>Conversion log</h1>
+                    <h1>Task # {2}</h1>
                     <p><a href = "/">New conversion</a></p>
                     <div class="well">
                     <a href = "/download/{2}/input.csv">Input file </a><br/>
