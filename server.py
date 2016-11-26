@@ -3,7 +3,7 @@ from flask import Flask, request, redirect, url_for, send_from_directory
 from werkzeug import secure_filename
 from converter.convert import convert
 from converter.convert import ingest
-import subprocess, uuid
+import subprocess, uuid, datetime
 
 WORKSPACE_FOLDER = '/tmp/conversion'
 ALLOWED_EXTENSIONS = set(['csv'])
@@ -52,6 +52,34 @@ def make_workspace():
 def send_js(path):
     print path
     return send_from_directory(WORKSPACE_FOLDER, path)
+
+@app.route('/show/<path:path>',  methods=['GET',])
+def show_path(path):
+    filepath = os.path.join(WORKSPACE_FOLDER, path)
+
+    modtime = datetime.datetime.fromtimestamp(
+        os.path.getmtime(filepath)
+    ).strftime('%Y-%m-%d %H:%M:%S')
+
+    if os.path.exists(filepath):
+        ret = """<!doctype html>
+                        <html><head>
+                        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on$
+                        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7u$
+                        <title>CSV to TEI4BPS converter | Task # {0}</title>
+                        </head><body>
+                        <div class="starter-template">
+                        <h1>Task # {0}</h1>
+                        <p>Processed at: {1}</p>
+                        <p><a href = "/">New conversion</a></p>
+                        <div class="well">
+                        <a href = "/download/{0}/input.csv">Input file </a><br/>
+                        <a href = "/download/{0}/output.xml">Converted file </a><br/>
+                        <a href = "/download/{0}/conversion.log">Conversion log</a>
+                        </div>""".format(path, modtime)
+    else:
+        ret = "Not found"
+    return ret
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
