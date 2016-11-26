@@ -1,5 +1,5 @@
 # TEI4BPS Web Converter
-A Flask wrapper around the TEI4BPS conversion script. 
+A Flask wrapper around the [TEI4BPS](https://github.com/berkeleyprosopography/TEI4BPSConverter) conversion script. 
 ## Endpoints cheatsheet
 * `/` - Home page, lets you upload a file. Select one from your machine, click upload and boom.
 * `/show/<id>` - Task page, provides you links to the various task files.
