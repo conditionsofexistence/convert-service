@@ -1,9 +1,10 @@
 # TEI4BPS Web Converter
-A Flask wrapper around the TEI4BPS conversion script. 
+A Flask wrapper around the [TEI4BPS](https://github.com/berkeleyprosopography/TEI4BPSConverter) conversion script. It allows 
+
 ## Endpoints cheatsheet
 * `/` - Home page, lets you upload a file. Select one from your machine, click upload and boom.
-* `/show/<id>` - Task page, provides you links to the various task files
-* `/download/<id>/<file>` - File page, it downloads the 
+* `/show/<id>` - Task page, provides you links to the various task files.
+* `/download/<id>/<file>` - File page, it serves you either of three files (in `text/plain` mimetype).
 
 ## Usage
 Every time a file is uploaded and processed (**task**), a unique  **id** is created. You can use this ID to later retrieve the results of a task and for support purposes. Each task contains three files:
@@ -23,3 +24,11 @@ To access the task page:
 ```sh
 /show/13fd312661284231a1868f6cbf7c967a
 ```
+
+## Running
+Install requirements (in virtualenv if preferred) and run with:
+
+`python server.py`
+
+### Conversion script compatibility
+The original conversion script is not immediately suitable for web service purposes and was modified to work in this con. It's always possible to check out the latest service-compatible version by pulling the `WebService-Converter` branch in the `converter` sub-repo.
