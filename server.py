@@ -37,16 +37,12 @@ def convert(filepath, filename, request):
         for line in err:
             outfile.write(line)
 
-    #log = proc.stderr.read()
-    print "convert()", out_path, err
     return out_path, err
 
 def make_workspace():
     uid = uuid.uuid4().get_hex()
     workspace = os.path.join(WORKSPACE_FOLDER, uid)
     os.makedirs(workspace)
-    # copy filepath to worspace and invoke there
-    print workspace
     return workspace, uid
 
 @app.route('/download/<path:path>',  methods=['GET',])
@@ -60,11 +56,10 @@ def index():
     if request.method == 'POST':
         file = request.files['file']
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
+            filename = 'input.csv'#secure_filename(file.filename)
             workspace, uid = make_workspace()
             file.save(os.path.join(workspace, filename))
             filepath = os.path.join(workspace, filename)
-            print filepath
             data, size, input_file = ingest(filepath, 'none')
             converted_file, log = convert(workspace, filename, request)
 
