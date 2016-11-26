@@ -21,18 +21,11 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-def convert(filepath, request):
-    uid = uuid.uuid4().get_hex()
-    header = "REQUESTED BY" + request.remote_addr
-    print "converting", header
-    workspace = os.path.join(WORKSPACE_FOLDER, uid)
-    os.makedirs(workspace)
-    # copy filepath to worspace and invoke there
-    print workspace
-    out_path = os.path.join(workspace, 'output.xml')
-    logfile = os.path.join(workspace, 'conversion.log')
+def convert(filepath, filename, request):
+    out_path = os.path.join(filepath, 'output.xml')
+    logfile = os.path.join(filepath, 'conversion.log')
     out, err = subprocess.Popen(['python','converter/convert.py',
-        '--input', filepath ,
+        '--input', os.path.join(filepath, filename) ,
         '--output', out_path,
         '-p', 'none' ],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
@@ -47,8 +40,16 @@ def convert(filepath, request):
             outfile.write(line)
 
     #log = proc.stderr.read()
-    print header
-    return out_path, err, uid
+    print "convert()", out_path, err
+    return out_path, err
+
+def make_workspace():
+    uid = uuid.uuid4().get_hex()
+    workspace = os.path.join(WORKSPACE_FOLDER, uid)
+    os.makedirs(workspace)
+    # copy filepath to worspace and invoke there
+    print workspace
+    return workspace, uid
 
 @app.route('/download/<path:path>',  methods=['GET',])
 def send_js(path):
@@ -62,11 +63,12 @@ def index():
         file = request.files['file']
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            workspace, uid = make_workspace()
+            file.save(os.path.join(workspace, filename))
+            filepath = os.path.join(workspace, filename)
             print filepath
             data, size, input_file = ingest(filepath, 'none')
-            converted_file, log, uid = convert(filepath, request)
+            converted_file, log = convert(workspace, filename, request)
 
             ret = """
                 <!doctype html>
