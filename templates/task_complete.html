@@ -4,20 +4,31 @@
      <h1>Task # <a href="/show/{{task_id}}">{{ task_id }}</a></h1>
 
      <div class="well">
-          <a href = "/download/{{ task_id }}/input.csv">Input file </a><br/>
-          <a href = "/download/{{ task_id }}/output.xml">Converted file </a><br/>
-          <a href = "/download/{{ task_id }}/conversion.log">This log</a>
+          <a href = "/download/{{ task_id }}/err.log">STDERR</a><br/>
+          <a href = "/download/{{ task_id }}/out.log">STDOUT</a><br/>
+          <a href = "/download/{{ task_id }}">This page</a>
      </div>
      {% if error %}
          <div class="alert alert-danger" role="alert">
-            <strong>Error running the converter:</strong>{{error}}
+            <strong>Error running task:</strong>{{error}}
             <p><a href="/download/{{ task_id}}/panic.log">Panic log</a></p>
           </div>
        {% endif %}
+       <a href = "/download/{{ task_id }}/out.log">STDOUT</a>
+        {% if out %}
      <p style='font-family:"Andale Mono", "Monotype.com", monospace;'>
-          {% for line in log %}
+          {% for line in out %}
               {{ line }}<br/>
           {% endfor %}
      </p>
-
+      {% endif %}
+     {% if err %}
+     <a href = "/download/{{ task_id }}/err.log">STDERR</a>
+      <p style='font-family:"Andale Mono", "Monotype.com", monospace;'>
+           
+          {% for line in err %}
+              {{ line }}<br/>
+          {% endfor %}    
+         </p>
+      {% endif %}
 {% endblock %}

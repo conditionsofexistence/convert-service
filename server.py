@@ -1,13 +1,15 @@
 import os
 from flask import Flask, request, redirect, url_for, send_from_directory, render_template
 from werkzeug import secure_filename
-from converter.convert import convert
-from converter.convert import ingest
 import subprocess, uuid, datetime
 import traceback
 
-WORKSPACE_FOLDER = '/tmp/conversion'
-ALLOWED_EXTENSIONS = set(['csv'])
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+WORKSPACE_FOLDER = '/tmp/tasks'
+ALLOWED_COMMANDS = ['w', 'hostname', 'time', 'ps', 'ps aux', 'ps axf', 'lsof -i', 'df -h', 'free -m']
 
 if not os.path.exists(WORKSPACE_FOLDER):
     os.makedirs(WORKSPACE_FOLDER)
@@ -15,32 +17,34 @@ if not os.path.exists(WORKSPACE_FOLDER):
 app = Flask(__name__)
 app.config['WORKSPACE_FOLDER'] = WORKSPACE_FOLDER
 
+def listify(command_string):
+    ret = [x for x in command_string.split(' ')]
+    return ret
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+def allowed_command(command):
+    return command in ALLOWED_COMMANDS
 
-def convert(filepath, filename, request):
-    out_path = os.path.join(filepath, 'output.xml')
-    logfile = os.path.join(filepath, 'conversion.log')
-    logfile_raw = os.path.join(filepath, 'raw-conversion.log')
-    out = err = err_ret = None
+def run(command, filepath, request):
+    logfile = os.path.join(filepath, 'out.log')
+    errfile = os.path.join(filepath, 'err.log')
+    out = err = out_ret = err_ret = None
     try:
-        out, err = subprocess.Popen(['python','converter/convert.py',
-            '--input', os.path.join(filepath, filename) ,
-            '--output', out_path,
-            '-p', 'none' ],
+        out, err = subprocess.Popen(command,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-
         with open(logfile, 'w+') as outfile:
+            outfile.write(out)
+        with open(errfile, 'w+') as outfile:
             outfile.write(err)
-    except:
-        pass
+    except Exception as e:
+        panicfile = os.path.join(workspace, "runtime-panic.log")
+        with open(panicfile, 'w+') as outfile:
+            outfile.write(traceback.format_exc())
 
-    with open(logfile, 'r') as logfile:
-        err_ret = [x for x in logfile.readlines()]
-
-    return out_path, err_ret
+    with open(logfile, 'r') as file:
+        out_ret = [x for x in file.readlines()]
+    with open(errfile, 'r') as file:
+        out_err = [x for x in file.readlines()]
+    return out_ret, err_ret
 
 
 def make_workspace():
@@ -83,17 +87,17 @@ def list():
 def index():
     #POST
     if request.method == 'POST':
-        file = request.files['file']
-        if file and allowed_file(file.filename):
-            filename = 'input.csv' #secure_filename(file.filename)
+        print request.values
+        print request.form
+        print dir(request)
+        command = listify(request.form['option'])
+        if command and allowed_command(request.form['option']):
             workspace, uid = make_workspace()
-            filepath = os.path.join(workspace, filename)
-            file.save(filepath)
-            ret = uid
             try:
-                data, size, input_file = ingest(filepath, 'none')
-                converted_file, log = convert(workspace, filename, request)
-                ret = render_template('task_complete.html', log = log,  task_id = uid, )
+                out = err =[]
+                print "ABOUT TO RUN COMMAND", command
+                out, err = run(command, workspace, request)
+                ret = render_template('task_complete.html', err = err, out= out,  task_id = uid, )
                 return ret
             except Exception as e:
                 panicfile = os.path.join(workspace, "panic.log")
@@ -105,7 +109,7 @@ def index():
                     error = e )
                 return ret
     
-    return render_template('home.html')
+    return render_template('home.html', commands =ALLOWED_COMMANDS)
 
 if __name__ == "__main__":
     app.run(host='127.0.0.1', port=5001, debug=True)

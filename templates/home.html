@@ -2,14 +2,25 @@
 {% block body %}
 <div class="container">
     <div class="starter-template">
-    <h1>CSV -> TEI4BPS Web Converter</h1>
+    <h1>Task manager</h1>
     <div class="well">
-        <p class="lead"> Select a CSV input file from your computer and click "upload" to have it converted in TEI4BPS</p>
+        <p class="lead">Pick something for me to do.</p>
 
     <form class="form-inline" action="" method=post enctype=multipart/form-data>
          <div class="form-group">
-            <input  class="form-control custom-file-input" type=file name=file style="height:auto;">
-            <input class="btn btn-primary" type=submit value=Upload>
+            <select name="option" width="300px">
+             
+             {% for command in commands%}
+             <option name="{{command}}" SELECTED>{{command}}</option>
+             {% endfor %} </select>
+            <input class="btn btn-primary" type=submit value=Run>
+        </div>
+    </form>
+    <p class="lead">...or tell me what to do</p>
+    <form class="form-inline" action="" method=post enctype=multipart/form-data>
+         <div class="form-group">
+            <input type="text" class="form-control" name ="option">
+            <input class="btn btn-primary" type="submit" value="Run">
         </div>
     </form>
 </div>
