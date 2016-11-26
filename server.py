@@ -127,7 +127,8 @@ def index():
     </head><body>
     <div class="container">
 <div class="starter-template">
-    <h1>CSV -> TEI4BPS Online Converter</h1>
+    <h1>CSV -> TEI4BPS Web Converter</h1>
+    <a href="https://github.com/berkeleyprosopography/convert-service">how do I use this?</a>
     <p class="lead"> Select a CSV input file from your computer and click "upload" to have it converted in TEI4BPS</p>
     </div>
     <form class="form-inline" action="" method=post enctype=multipart/form-data>
