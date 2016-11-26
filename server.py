@@ -73,8 +73,9 @@ def index():
              <div class="starter-template">
                 <h1>Conversion log</h1>
                 <div class="well">
-                <a href = "/download/{2}/output.xml"> Converted file </a><br/>
-                <a href = "/download/{2}/conversion.log"> Logfile permalink</a>
+                <a href = "/download/{2}/input.cav">Input file </a><br/>
+                <a href = "/download/{2}/output.xml">Converted file </a><br/>
+                <a href = "/download/{2}/conversion.log">This log</a>
                 </div>
                 <p style='font-family:"Andale Mono", "Monotype.com", monospace;'>{0}</p>
         </div></body></html>""".format("<br/>".join([line for line in log]), converted_file, uid)
