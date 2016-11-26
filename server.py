@@ -50,8 +50,8 @@ def make_workspace():
 
 @app.route('/download/<path:path>',  methods=['GET',])
 def send_js(path):
-    print path
     return send_from_directory(WORKSPACE_FOLDER, path, mimetype='text/plain')
+
 
 @app.route('/show/<path:path>',  methods=['GET',])
 def show_path(path):
@@ -61,11 +61,20 @@ def show_path(path):
         os.path.getmtime(filepath)
     ).strftime('%Y-%m-%d %H:%M:%S')
 
+    ctime = datetime.datetime.fromtimestamp(
+        os.path.getctime(filepath)
+    ).strftime('%Y-%m-%d %H:%M:%S')
+
     if os.path.exists(filepath):
-        ret = render_template('task.html', task_id = path, task_time = modtime)
+        ret = render_template('task.html', task_id = path, m_time = modtime, c_time=ctime)
     else:
         ret = "Not found"
     return ret
+
+@app.route('/list',  methods=['GET',])
+def list():
+    task_list = [x[1] for x in os.walk(WORKSPACE_FOLDER)][0]
+    return render_template('list.html', task_list = task_list,)
 
 @app.route("/", methods=['GET', 'POST'])
 def index():

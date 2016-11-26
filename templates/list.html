@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="container">
+     <h1>Tasks list<a href="/show/{{task_id}}">{{ task_id }}</a></h1>
+     
+     <div class="list-group">
+       {% for line in task_list %}
+         <a class="list-group-item" href="/show/{{ line }}">{{ line }}</a>
+          {% endfor %}
+     </div>
+
+
+{% endblock %}
