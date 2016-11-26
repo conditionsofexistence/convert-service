@@ -28,11 +28,12 @@ def convert(filepath, filename, request):
         '-p', 'none' ],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
 
-    out = out.splitlines()
+    # first dump for inspection
+    with open(os.path.join(filepath, 'raw_output.txt'), 'w+') as outfile:
+        outfile.write(err)
+    # parse line by line
     err = [x.decode(encoding='ascii') for x in err.splitlines()]
-
-    print len(err), type(err)
-
+    # now write to nice logfile
     with open(logfile, 'w+') as outfile:
         for line in err:
             outfile.write(line)
@@ -73,7 +74,7 @@ def index():
              <div class="starter-template">
                 <h1>Conversion log</h1>
                 <div class="well">
-                <a href = "/download/{2}/input.cav">Input file </a><br/>
+                <a href = "/download/{2}/input.csv">Input file </a><br/>
                 <a href = "/download/{2}/output.xml">Converted file </a><br/>
                 <a href = "/download/{2}/conversion.log">This log</a>
                 </div>
