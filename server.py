@@ -5,7 +5,6 @@ from converter.convert import convert
 from converter.convert import ingest
 import subprocess, uuid
 
-UPLOAD_FOLDER = '/tmp/'
 WORKSPACE_FOLDER = '/tmp/conversion'
 ALLOWED_EXTENSIONS = set(['csv'])
 
@@ -13,7 +12,6 @@ if not os.path.exists(WORKSPACE_FOLDER):
     os.makedirs(WORKSPACE_FOLDER)
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['WORKSPACE_FOLDER'] = WORKSPACE_FOLDER
 
 
