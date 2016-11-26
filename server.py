@@ -22,23 +22,25 @@ def allowed_file(filename):
 def convert(filepath, filename, request):
     out_path = os.path.join(filepath, 'output.xml')
     logfile = os.path.join(filepath, 'conversion.log')
-    out, err = subprocess.Popen(['python','converter/convert.py',
-        '--input', os.path.join(filepath, filename) ,
-        '--output', out_path,
-        '-p', 'none' ],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    logfile_raw = os.path.join(filepath, 'raw-conversion.log')
+    out = err = err_ret = None
+    try:
+        out, err = subprocess.Popen(['python','converter/convert.py',
+            '--input', os.path.join(filepath, filename) ,
+            '--output', out_path,
+            '-p', 'none' ],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
 
-    # first dump for inspection
-    with open(os.path.join(filepath, 'raw_output.txt'), 'w+') as outfile:
-        outfile.write(err)
-    # parse line by line
-    err = [x.decode(encoding='ascii') for x in err.splitlines()]
-    # now write to nice logfile
-    with open(logfile, 'w+') as outfile:
-        for line in err:
-            outfile.write(line)
+        with open(logfile, 'w+') as outfile:
+            outfile.write(err)
+    except:
+        pass
 
-    return out_path, err
+    with open(logfile, 'r') as logfile:
+        err_ret = [x for x in logfile.readlines()]
+
+    return out_path, err_ret
+
 
 def make_workspace():
     uid = uuid.uuid4().get_hex()
@@ -57,30 +59,35 @@ def index():
     if request.method == 'POST':
         file = request.files['file']
         if file and allowed_file(file.filename):
-            filename = 'input.csv'#secure_filename(file.filename)
+            filename = 'input.csv' #secure_filename(file.filename)
             workspace, uid = make_workspace()
             file.save(os.path.join(workspace, filename))
             filepath = os.path.join(workspace, filename)
-            data, size, input_file = ingest(filepath, 'none')
-            converted_file, log = convert(workspace, filename, request)
-
-            ret = """
-                <!doctype html>
-                <html><head>
-                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on$
-                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7u$
-                <title>CSV to TEI4BPS converter | Conversion complete!</title>
-                </head><body>
-             <div class="starter-template">
-                <h1>Conversion log</h1>
-                <div class="well">
-                <a href = "/download/{2}/input.csv">Input file </a><br/>
-                <a href = "/download/{2}/output.xml">Converted file </a><br/>
-                <a href = "/download/{2}/conversion.log">This log</a>
-                </div>
-                <p style='font-family:"Andale Mono", "Monotype.com", monospace;'>{0}</p>
-        </div></body></html>""".format("<br/>".join([line for line in log]), converted_file, uid)
-            return ret
+            ret = uid
+            try:
+                data, size, input_file = ingest(filepath, 'none')
+                converted_file, log = convert(workspace, filename, request)
+                print type(log)
+                ret = """
+                    <!doctype html>
+                    <html><head>
+                    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on$
+                    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7u$
+                    <title>CSV to TEI4BPS converter | Conversion complete!</title>
+                    </head><body>
+                    <div class="starter-template">
+                    <h1>Conversion log</h1>
+                    <p><a href = "/">New conversion</a></p>
+                    <div class="well">
+                    <a href = "/download/{2}/input.csv">Input file </a><br/>
+                    <a href = "/download/{2}/output.xml">Converted file </a><br/>
+                    <a href = "/download/{2}/conversion.log">This log</a>
+                    </div>
+                    <p style='font-family:"Andale Mono", "Monotype.com", monospace;'>{0}</p>
+                    </div></body></html>""".format("<br/>".join([line for line in log]), converted_file, uid)
+                return ret
+            except Exception as e:
+                return "http://convert.berkeleyprosopography.org/download/{0}/raw_output.txt\nError was: {1}".format(ret, e)
 
     return """
     <!DOCTYPE html>
