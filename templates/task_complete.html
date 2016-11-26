@@ -7,11 +7,17 @@
           <a href = "/download/{{ task_id }}/input.csv">Input file </a><br/>
           <a href = "/download/{{ task_id }}/output.xml">Converted file </a><br/>
           <a href = "/download/{{ task_id }}/conversion.log">This log</a>
+     </div>
+     {% if error %}
+         <div class="alert alert-danger" role="alert">
+            <strong>Error running the converter:</strong>{{error}}
+            <p><a href="/download/{{ task_id}}/panic.log">Panic log</a></p>
           </div>
+       {% endif %}
      <p style='font-family:"Andale Mono", "Monotype.com", monospace;'>
           {% for line in log %}
               {{ line }}<br/>
           {% endfor %}
      </p>
-</div>
+
 {% endblock %}

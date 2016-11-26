@@ -4,6 +4,7 @@ from werkzeug import secure_filename
 from converter.convert import convert
 from converter.convert import ingest
 import subprocess, uuid, datetime
+import traceback
 
 WORKSPACE_FOLDER = '/tmp/conversion'
 ALLOWED_EXTENSIONS = set(['csv'])
@@ -93,7 +94,14 @@ def index():
                 ret = render_template('task_complete.html', log = log,  task_id = uid, )
                 return ret
             except Exception as e:
-                return "http://convert.berkeleyprosopography.org/download/{0}/raw_output.txt\nError was: {1}".format(ret, e)
+                panicfile = os.path.join(workspace, "panic.log")
+                with open(panicfile, 'w+') as outfile:
+                    outfile.write(traceback.format_exc())
+                ret = render_template('task_complete.html', 
+                    log = [x for x in traceback.format_exc().split('\n')],  
+                    task_id = uid, 
+                    error = e )
+                return ret
     
     return render_template('home.html')
 
