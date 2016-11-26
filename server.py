@@ -23,22 +23,29 @@ def allowed_file(filename):
 
 def convert(filepath, request):
     uid = uuid.uuid4().get_hex()
-    header = "REQUESTED BY", request.remote_addr
-
+    header = "REQUESTED BY" + request.remote_addr
+    print "converting", header
     workspace = os.path.join(WORKSPACE_FOLDER, uid)
     os.makedirs(workspace)
     # copy filepath to worspace and invoke there
     print workspace
     out_path = os.path.join(workspace, 'output.xml')
-    out, err = subprocess.Popen(['python','converter/convert.py', 
+    logfile = os.path.join(workspace, 'conversion.log')
+    out, err = subprocess.Popen(['python','converter/convert.py',
         '--input', filepath ,
-        '--output', out_path, 
+        '--output', out_path,
         '-p', 'none' ],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+
     out = out.splitlines()
     err = [x.decode(encoding='ascii') for x in err.splitlines()]
+
     print len(err), type(err)
-    print err
+
+    with open(logfile, 'w+') as outfile:
+        for line in err:
+            outfile.write(line)
+
     #log = proc.stderr.read()
     print header
     return out_path, err, uid
@@ -59,27 +66,48 @@ def index():
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             print filepath
             data, size, input_file = ingest(filepath, 'none')
-            converted_file, log, uid= convert(filepath, request)
+            converted_file, log, uid = convert(filepath, request)
 
             ret = """
                 <!doctype html>
-                <head>
+                <html><head>
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on$
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7u$
                 <title>CSV to TEI4BPS converter | Conversion complete!</title>
+                </head><body>
+             <div class="starter-template">
                 <h1>Conversion log</h1>
-                <a href = "/download/{2}/output.xml"> File: {1}</a>
-                <p style='font-family:"Andale Mono", "Monotype.com", monospace;'>{0}</p>""".format("<br/>".join([line for line in log]), converted_file, uid)
+                <div class="well">
+                <a href = "/download/{2}/output.xml"> Converted file </a><br/>
+                <a href = "/download/{2}/conversion.log"> Logfile permalink</a>
+                </div>
+                <p style='font-family:"Andale Mono", "Monotype.com", monospace;'>{0}</p>
+        </div></body></html>""".format("<br/>".join([line for line in log]), converted_file, uid)
             return ret
 
     return """
-    <!doctype html>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
     <title>CSV to TEI4BPS converter</title>
-    <h1>Upload new File</h1>
-    <form action="" method=post enctype=multipart/form-data>
-      <p><input type=file name=file>
-         <input type=submit value=Upload>
-    </form>
-    <p>%s</p>
-    """ % "<br>".join(os.listdir(app.config['UPLOAD_FOLDER'],))
+    </head><body>
+    <div class="container">
+<div class="starter-template">
+    <h1>CSV -> TEI4BPS Online Converter</h1>
+    <p class="lead"> Select a CSV input file from your computer and click "upload" to have it converted in TEI4BPS</p>
+    </div>
+    <form class="form-inline" action="" method=post enctype=multipart/form-data>
+         <div class="form-group">
+         <input class="form-control" class="custom-file-input" type=file name=file>
+         <input class="btn btn-primary" type=submit value=Upload>
+    </div>
+</form>
+</div>
+    </body>
+    </html>
+    """
 
 if __name__ == "__main__":
     app.run(host='127.0.0.1', port=5001, debug=True)
