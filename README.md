@@ -3,6 +3,7 @@ A Flask wrapper around the [TEI4BPS](https://github.com/berkeleyprosopography/TE
 
 ## Endpoints cheatsheet
 * `/` - Home page, lets you upload a file. Select one from your machine, click upload and boom.
+* `/list` - List page, shows you a list of all the tasks that have run.
 * `/show/<id>` - Task page, provides you links to the various task files.
 * `/download/<id>/<file>` - File page, it serves you either of three files (in `text/plain` mimetype).
 
@@ -23,6 +24,10 @@ For example, the result of task #`13fd312661284231a1868f6cbf7c967a` would look l
 To access the task page:
 ```sh
 /show/13fd312661284231a1868f6cbf7c967a
+```
+or simply find it in the tasks list
+```sh
+/list
 ```
 
 ## Running
