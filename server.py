@@ -51,7 +51,7 @@ def make_workspace():
 @app.route('/download/<path:path>',  methods=['GET',])
 def send_js(path):
     print path
-    return send_from_directory(WORKSPACE_FOLDER, path)
+    return send_from_directory(WORKSPACE_FOLDER, path, mimetype='text/plain')
 
 @app.route('/show/<path:path>',  methods=['GET',])
 def show_path(path):
