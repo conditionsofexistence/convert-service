@@ -1,0 +1,21 @@
+    {% extends "base.html" %}
+    {% block body %}
+    <div class="container">
+        <div class="starter-template">
+        <h1>CSV -> TEI4BPS Web Converter</h1>
+        <div class="well">
+            <p class="lead"> Select a CSV input file from your computer and click "upload" to have it converted in TEI4BPS</p>
+
+    <form class="form-inline" action="" method=post enctype=multipart/form-data>
+         <div class="form-group">
+         <input class="form-control" class="custom-file-input" type=file name=file>
+         <input class="btn btn-primary" type=submit value=Upload>
+    </div>
+    </div>
+</form>
+</div>
+
+<footer>
+    <a href="https://github.com/berkeleyprosopography/convert-service">how do I use this?</a>
+</footer>
+{% endblock %}
